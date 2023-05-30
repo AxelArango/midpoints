@@ -1,0 +1,33 @@
+st_midpoints<-function(data){
+  ictx<-data
+  midpx<-data.frame()
+  names(ictx)<-c("taxon","x","y")
+  tx<-data.frame(table(ictx$taxon))
+  names(tx)<-c("sp","freq")
+  low_p<-which(tx$freq==1)
+  dir<-as.character(tx$sp[low_p])
+  for(j in 1:length(dir)){
+    spd<-ictx[which(ictx$taxon==dir[j]),]
+    names(spd)<-c("sp","X","Y")
+    midpx<-rbind(midpx,spd)
+    ictx<-ictx[-which(ictx$taxon==dir[j]),]
+  }
+  unitax<-unique(ictx$taxon)
+for(i in 1:length(unitax)){
+sp1<-ictx[which(ictx$taxon==unitax[i]),]
+Poly_Coord_df<-data.frame(sp1$x,sp1$y)
+names(Poly_Coord_df)<-c("lon","lat")
+poly <- Poly_Coord_df %>% 
+  st_as_sf(coords = c("lon", "lat"), 
+           crs = st_crs("+datum=WGS84 +proj=longlat")) %>% 
+  st_bbox() %>% 
+  st_as_sfc()
+cent<-st_centroid(poly)
+spcent<-data.frame(unitax[i],st_coordinates(cent))
+names(spcent)<-c("sp","X","Y")
+#print(i)
+midpx<-rbind(midpx,spcent)
+}
+  row.names(midpx)<-NULL
+  midpx[order(midpx$sp),]
+  }
